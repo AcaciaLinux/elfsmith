@@ -1,3 +1,17 @@
+//! A simple-to use and handy library for working with ELF files
+//!
+//! # Usage
+//! ```no_run
+//! use std::fs::File;
+//! use elfsmith::ELFFile;
+//!
+//! let mut file = File::open("path").unwrap();
+//!
+//! let elf = ELFFile::load(&mut file).unwrap();
+//!
+//! println!("{:#x?}", elf);
+//! ```
+
 mod packable;
 pub use packable::*;
 
