@@ -34,7 +34,7 @@ pub struct Header {
     /// The count of section headers
     sh_entry_count: u16,
     /// The section header index of the string table
-    sh_str_index: u16,
+    pub sh_str_index: u16,
 }
 
 impl Header {
