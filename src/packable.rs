@@ -2,7 +2,7 @@ use std::io::{self};
 
 use crate::Class;
 
-/// An error while unpackin
+/// An error while unpacking
 #[derive(Debug)]
 pub enum UnpackError {
     /// An invalid magic sequence was unpacked
