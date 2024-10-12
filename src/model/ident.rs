@@ -11,13 +11,13 @@ pub const ELF_FILE_MAGIC: [u8; 4] = [0x7f, 0x45, 0x4c, 0x46];
 /// The ELF ident structure to identify further
 /// parsing of an ELF file
 #[derive(Debug)]
-pub struct ELFIdent {
+pub struct Ident {
     /// The `ELF` file magic [ELF_FILE_MAGIC]
     pub magic: [u8; 4],
     /// The class of the ELF file at hand
-    pub class: ELFIdentClass,
+    pub class: Class,
     /// The endianness of the file
-    pub endianness: ELFIdentEndianness,
+    pub endianness: Endianness,
     /// The file version (normally `1`)
     pub version: u8,
     /// The operating system ABI
@@ -27,8 +27,8 @@ pub struct ELFIdent {
 }
 
 /// The class of the ELF file at hand
-#[derive(Debug)]
-pub enum ELFIdentClass {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Class {
     /// A `32` bit ELF file
     ELF32 = 1,
     /// A `64` bit ELF file
@@ -36,15 +36,23 @@ pub enum ELFIdentClass {
 }
 
 /// The endianness of this file
-#[derive(Debug)]
-pub enum ELFIdentEndianness {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Endianness {
     /// Little endian
     Little = 1,
     /// Big endian
     Big = 2,
 }
 
-impl Packable for ELFIdentClass {
+impl Ident {
+    /// Returns whether the ident describes
+    /// the file to be big endian
+    pub fn is_big_endian(&self) -> bool {
+        self.endianness == Endianness::Big
+    }
+}
+
+impl Packable for Class {
     fn pack<W: io::Write>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
         w.write_all(&[self as u8])
     }
@@ -58,14 +66,14 @@ impl Packable for ELFIdentClass {
             1 => Ok(Self::ELF32),
             2 => Ok(Self::ELF64),
             _ => Err(UnpackError::InvalidEnumVariant {
-                name: "ELFIdentClass".into(),
+                name: "Class".into(),
                 variant: data[0] as usize,
             }),
         }
     }
 }
 
-impl Packable for ELFIdentEndianness {
+impl Packable for Endianness {
     fn pack<W: io::Write>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
         w.write_all(&[self as u8])
     }
@@ -79,14 +87,14 @@ impl Packable for ELFIdentEndianness {
             1 => Ok(Self::Little),
             2 => Ok(Self::Big),
             _ => Err(UnpackError::InvalidEnumVariant {
-                name: "ELFIdentEndianness".into(),
+                name: "Endianness".into(),
                 variant: data[0] as usize,
             }),
         }
     }
 }
 
-impl Packable for ELFIdent {
+impl Packable for Ident {
     fn pack<W: io::Write>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
         w.write_all(&self.magic)?;
 
@@ -114,8 +122,8 @@ impl Packable for ELFIdent {
 
         let s = Self {
             magic,
-            class: ELFIdentClass::unpack(r, false)?,
-            endianness: ELFIdentEndianness::unpack(r, false)?,
+            class: Class::unpack(r, false)?,
+            endianness: Endianness::unpack(r, false)?,
             version: u8::unpack(r, false)?,
             os_abi: u8::unpack(r, false)?,
             abi_version: u8::unpack(r, false)?,
