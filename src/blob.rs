@@ -25,8 +25,10 @@ impl Blob {
     ) -> Result<Self, io::Error> {
         let mut res = vec![0u8; size];
 
+        let old_pos = r.stream_position()?;
         r.seek(io::SeekFrom::Start(offset))?;
         r.read_exact(&mut res)?;
+        r.seek(io::SeekFrom::Start(old_pos))?;
 
         Ok(Blob { blob: res })
     }

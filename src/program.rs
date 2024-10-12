@@ -26,26 +26,12 @@ pub struct ProgramHeader {
     pub mem_size: u64,
     /// Alignment for this segment, `0` or `1` mean no alignment
     pub alignment: u64,
-    /// The program data, if loaded
-    pub data: Option<Blob>,
-}
-
-impl ProgramHeader {
-    /// Loads the program described by this header from the file
-    ///
-    /// This populates `self.data`
-    /// # Arguments
-    /// * `r` - The stream to read from
-    pub fn load<R: io::Read + io::Seek>(&mut self, r: &mut R) -> Result<(), io::Error> {
-        let blob = Blob::load(r, self.offset, self.file_size as usize)?;
-        self.data = Some(blob);
-
-        Ok(())
-    }
+    /// The program data
+    pub data: Blob,
 }
 
 impl PackableClass for ProgramHeader {
-    fn pack_class<W: std::io::Write>(
+    fn pack_class<W: std::io::Write + io::Seek>(
         self,
         w: &mut W,
         big_endian: bool,
@@ -72,7 +58,7 @@ impl PackableClass for ProgramHeader {
         Ok(())
     }
 
-    fn unpack_class<R: std::io::Read>(
+    fn unpack_class<R: std::io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,
         class: super::Class,
@@ -99,6 +85,8 @@ impl PackableClass for ProgramHeader {
 
         let alignment = u64::unpack_class(r, big_endian, class)?;
 
+        let data = Blob::load(r, offset, file_size as usize)?;
+
         Ok(Self {
             ty,
             flags,
@@ -108,7 +96,7 @@ impl PackableClass for ProgramHeader {
             file_size,
             mem_size,
             alignment,
-            data: None,
+            data,
         })
     }
 }

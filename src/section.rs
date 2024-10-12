@@ -30,26 +30,12 @@ pub struct SectionHeader {
     pub addr_align: u64,
     /// The size in bytes of fixed-size section entries, otherwise `0`
     pub entry_size: u64,
-    /// The section data, if loaded
-    pub data: Option<Blob>,
-}
-
-impl SectionHeader {
-    /// Loads the section described by this header from the file
-    ///
-    /// This populates `self.data`
-    /// # Arguments
-    /// * `r` - The stream to read from
-    pub fn load<R: io::Read + io::Seek>(&mut self, r: &mut R) -> Result<(), io::Error> {
-        let blob = Blob::load(r, self.offset, self.size as usize)?;
-        self.data = Some(blob);
-
-        Ok(())
-    }
+    /// The section data
+    pub data: Blob,
 }
 
 impl PackableClass for SectionHeader {
-    fn pack_class<W: std::io::Write>(
+    fn pack_class<W: std::io::Write + io::Seek>(
         self,
         w: &mut W,
         big_endian: bool,
@@ -70,7 +56,7 @@ impl PackableClass for SectionHeader {
         Ok(())
     }
 
-    fn unpack_class<R: std::io::Read>(
+    fn unpack_class<R: std::io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,
         class: Class,
@@ -87,6 +73,8 @@ impl PackableClass for SectionHeader {
         let addr_align = u64::unpack_class(r, big_endian, class)?;
         let entry_size = u64::unpack_class(r, big_endian, class)?;
 
+        let data = Blob::load(r, offset, size as usize)?;
+
         Ok(Self {
             name,
             ty,
@@ -98,7 +86,7 @@ impl PackableClass for SectionHeader {
             info,
             addr_align,
             entry_size,
-            data: None,
+            data,
         })
     }
 }

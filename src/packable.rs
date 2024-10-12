@@ -36,13 +36,13 @@ pub trait Packable: Sized {
     /// # Arguments
     /// * `w` - The stream to write to using `.write_all()`
     /// * `big_endian` - Whether the stream should be written to in big endian form
-    fn pack<W: io::Write>(self, w: &mut W, big_endian: bool) -> Result<(), io::Error>;
+    fn pack<W: io::Write + io::Seek>(self, w: &mut W, big_endian: bool) -> Result<(), io::Error>;
 
     /// Unpack `Self` from `r`
     /// # Arguments
     /// * `r` - The stream to read from
     /// * `big_endian` - Whether the stream should be read from in big endian form
-    fn unpack<R: io::Read>(r: &mut R, big_endian: bool) -> Result<Self, UnpackError>;
+    fn unpack<R: io::Read + io::Seek>(r: &mut R, big_endian: bool) -> Result<Self, UnpackError>;
 }
 
 /// A special form of the [Packable] trait - a pointer that can be stored in `32` or `64` bits
@@ -52,7 +52,7 @@ pub trait PackableClass: Sized {
     /// * `w` - The stream to write to using `.write_all()`
     /// * `big_endian` - Whether the stream should be written to in big endian form
     /// * `class` - The ELF class to use for packing
-    fn pack_class<W: io::Write>(
+    fn pack_class<W: io::Write + io::Seek>(
         self,
         w: &mut W,
         big_endian: bool,
@@ -64,7 +64,7 @@ pub trait PackableClass: Sized {
     /// * `r` - The stream to read from
     /// * `big_endian` - Whether the stream should be read from in big endian form
     /// * `class` - The ELF class to use for unpacking
-    fn unpack_class<R: io::Read>(
+    fn unpack_class<R: io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,
         class: Class,
@@ -109,7 +109,7 @@ impl_packable!(u128);
 impl_packable!(i128);
 
 impl PackableClass for u64 {
-    fn pack_class<W: io::Write>(
+    fn pack_class<W: io::Write + io::Seek>(
         self,
         w: &mut W,
         big_endian: bool,
@@ -122,7 +122,7 @@ impl PackableClass for u64 {
         }
     }
 
-    fn unpack_class<R: io::Read>(
+    fn unpack_class<R: io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,
         class: Class,

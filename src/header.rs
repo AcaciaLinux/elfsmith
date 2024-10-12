@@ -84,7 +84,11 @@ impl Header {
 }
 
 impl Packable for Header {
-    fn pack<W: std::io::Write>(self, w: &mut W, _: bool) -> Result<(), std::io::Error> {
+    fn pack<W: std::io::Write + std::io::Seek>(
+        self,
+        w: &mut W,
+        _: bool,
+    ) -> Result<(), std::io::Error> {
         let big_endian = self.ident.is_big_endian();
         let class = self.ident.class;
 
@@ -111,7 +115,10 @@ impl Packable for Header {
         Ok(())
     }
 
-    fn unpack<R: std::io::Read>(r: &mut R, _: bool) -> Result<Self, crate::UnpackError> {
+    fn unpack<R: std::io::Read + std::io::Seek>(
+        r: &mut R,
+        _: bool,
+    ) -> Result<Self, crate::UnpackError> {
         let ident = Ident::unpack(r, false)?;
 
         let big_endian = ident.is_big_endian();
