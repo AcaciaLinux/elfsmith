@@ -15,3 +15,6 @@ pub use section::*;
 
 mod blob;
 pub use blob::*;
+
+mod file;
+pub use file::*;
