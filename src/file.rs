@@ -1,6 +1,8 @@
 use std::io::{Read, Seek};
 
-use crate::{Header, Packable, ProgramHeader, SectionHeader, UnpackError};
+use crate::{
+    str_from_null_terminated, Header, Packable, ProgramHeader, SectionHeader, UnpackError,
+};
 
 /// A representation of a ELF file
 #[derive(Debug)]
@@ -32,28 +34,25 @@ impl ELFFile {
         })
     }
 
-    /// Loads a ELF file fully from the provided stream
-    ///
-    /// This will load the **ALL** binary blobs, only headers
+    /// Gets a string by offset from the `.shstrtab` section
     /// # Arguments
-    /// * `r` - The stream to read from
-    pub fn load_fully<R: Read + Seek>(r: &mut R) -> Result<Self, UnpackError> {
-        let header = Header::unpack(r, false)?;
+    /// * `offset` - The offset into the binary data of the section
+    /// # Returns
+    /// `None` if the section table is not found or invalid or `offset`
+    /// is out of bounds
+    pub fn get_sh_string(&self, offset: usize) -> Option<String> {
+        let section_names = &self
+            .section_headers
+            .get(self.header.sh_str_index as usize)?;
 
-        let mut program_headers = header.read_program_headers(r)?;
-        for header in &mut program_headers {
-            header.load(r)?;
+        if offset > section_names.size as usize {
+            return None;
         }
 
-        let mut section_headers = header.read_section_headers(r)?;
-        for header in &mut section_headers {
-            header.load(r)?;
-        }
+        let ptr = section_names.data.blob.as_ptr();
 
-        Ok(Self {
-            header,
-            program_headers,
-            section_headers,
-        })
+        let s = unsafe { str_from_null_terminated(ptr.byte_add(offset)) };
+
+        Some(s.to_owned())
     }
 }
