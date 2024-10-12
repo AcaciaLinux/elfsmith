@@ -3,6 +3,9 @@
 mod ident;
 pub use ident::*;
 
+mod header;
+pub use header::*;
+
 mod program;
 pub use program::*;
 
