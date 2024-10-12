@@ -1,4 +1,9 @@
-use crate::{Packable, PackableClass, UnpackError};
+use std::{
+    fmt::Debug,
+    io::{self},
+};
+
+use crate::{Blob, Packable, PackableClass, UnpackError};
 
 use super::Class;
 
@@ -25,6 +30,22 @@ pub struct SectionHeader {
     pub addr_align: u64,
     /// The size in bytes of fixed-size section entries, otherwise `0`
     pub entry_size: u64,
+    /// The section data, if loaded
+    pub data: Option<Blob>,
+}
+
+impl SectionHeader {
+    /// Loads the section described by this header from the file
+    ///
+    /// This populates `self.data`
+    /// # Arguments
+    /// * `r` - The stream to read from
+    pub fn load<R: io::Read + io::Seek>(&mut self, r: &mut R) -> Result<(), io::Error> {
+        let blob = Blob::load(r, self.offset, self.size as usize)?;
+        self.data = Some(blob);
+
+        Ok(())
+    }
 }
 
 impl PackableClass for SectionHeader {
@@ -77,6 +98,7 @@ impl PackableClass for SectionHeader {
             info,
             addr_align,
             entry_size,
+            data: None,
         })
     }
 }

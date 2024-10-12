@@ -1,4 +1,6 @@
-use crate::{Packable, PackableClass, UnpackError};
+use std::{fmt::Debug, io};
+
+use crate::{Blob, Packable, PackableClass, UnpackError};
 
 use super::Class;
 
@@ -24,6 +26,22 @@ pub struct ProgramHeader {
     pub mem_size: u64,
     /// Alignment for this segment, `0` or `1` mean no alignment
     pub alignment: u64,
+    /// The program data, if loaded
+    pub data: Option<Blob>,
+}
+
+impl ProgramHeader {
+    /// Loads the program described by this header from the file
+    ///
+    /// This populates `self.data`
+    /// # Arguments
+    /// * `r` - The stream to read from
+    pub fn load<R: io::Read + io::Seek>(&mut self, r: &mut R) -> Result<(), io::Error> {
+        let blob = Blob::load(r, self.offset, self.file_size as usize)?;
+        self.data = Some(blob);
+
+        Ok(())
+    }
 }
 
 impl PackableClass for ProgramHeader {
@@ -90,6 +108,7 @@ impl PackableClass for ProgramHeader {
             file_size,
             mem_size,
             alignment,
+            data: None,
         })
     }
 }
