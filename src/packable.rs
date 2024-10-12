@@ -1,6 +1,6 @@
 use std::io::{self};
 
-use crate::model::Class;
+use crate::Class;
 
 /// An error while unpackin
 #[derive(Debug)]
