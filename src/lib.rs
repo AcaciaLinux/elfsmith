@@ -12,3 +12,6 @@ pub use program::*;
 
 mod section;
 pub use section::*;
+
+mod blob;
+pub use blob::*;
