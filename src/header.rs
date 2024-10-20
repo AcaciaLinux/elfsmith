@@ -1,6 +1,6 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use crate::{Packable, PackableClass, UnpackError};
+use crate::{Packable, PackableClass, UnpackError, Unpackable, UnpackableClass};
 
 use super::{Ident, ProgramHeader, SectionHeader};
 
@@ -114,7 +114,9 @@ impl Packable for Header {
 
         Ok(())
     }
+}
 
+impl Unpackable for Header {
     fn unpack<R: std::io::Read + std::io::Seek>(
         r: &mut R,
         _: bool,

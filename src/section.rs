@@ -3,7 +3,7 @@ use std::{
     io::{self},
 };
 
-use crate::{Blob, Packable, PackableClass, UnpackError};
+use crate::{Blob, Packable, PackableClass, UnpackError, Unpackable, UnpackableClass};
 
 use super::Class;
 
@@ -55,7 +55,9 @@ impl PackableClass for SectionHeader {
 
         Ok(())
     }
+}
 
+impl UnpackableClass for SectionHeader {
     fn unpack_class<R: std::io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,

@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::{Packable, UnpackError};
+use crate::{Packable, UnpackError, Unpackable};
 
 /// The ident padding sequence, filled with `0`
 const ELF_IDENT_PADDING: [u8; 7] = [0u8; 7];
@@ -56,7 +56,9 @@ impl Packable for Class {
     fn pack<W: io::Write + io::Seek>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
         w.write_all(&[self as u8])
     }
+}
 
+impl Unpackable for Class {
     fn unpack<R: io::Read>(r: &mut R, _: bool) -> Result<Self, UnpackError> {
         let mut data = [0u8];
 
@@ -77,7 +79,9 @@ impl Packable for Endianness {
     fn pack<W: io::Write + io::Seek>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
         w.write_all(&[self as u8])
     }
+}
 
+impl Unpackable for Endianness {
     fn unpack<R: io::Read>(r: &mut R, _: bool) -> Result<Self, UnpackError> {
         let mut data = [0u8];
 
@@ -108,7 +112,9 @@ impl Packable for Ident {
 
         w.write_all(&ELF_IDENT_PADDING)
     }
+}
 
+impl Unpackable for Ident {
     fn unpack<R: io::Read + io::Seek>(r: &mut R, _: bool) -> Result<Self, UnpackError> {
         let mut magic = [0u8; 4];
         r.read_exact(&mut magic)?;

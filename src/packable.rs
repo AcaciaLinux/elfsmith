@@ -29,15 +29,19 @@ impl From<std::io::Error> for UnpackError {
     }
 }
 
-/// Allows the implementing structs to be serialized and
-/// deserialized from a binary stream
-pub trait Packable: Sized {
+/// Allows the implementing structs to be serialized
+/// into a binary stream
+pub trait Packable {
     /// Pack `self` to `w`
     /// # Arguments
     /// * `w` - The stream to write to using `.write_all()`
     /// * `big_endian` - Whether the stream should be written to in big endian form
     fn pack<W: io::Write + io::Seek>(self, w: &mut W, big_endian: bool) -> Result<(), io::Error>;
+}
 
+/// Allows the implementing structs to be deserialized
+/// from a binary stream
+pub trait Unpackable: Sized {
     /// Unpack `Self` from `r`
     /// # Arguments
     /// * `r` - The stream to read from
@@ -46,7 +50,7 @@ pub trait Packable: Sized {
 }
 
 /// A special form of the [Packable] trait - a pointer that can be stored in `32` or `64` bits
-pub trait PackableClass: Sized {
+pub trait PackableClass {
     /// Pack `self` to `w`
     /// # Arguments
     /// * `w` - The stream to write to using `.write_all()`
@@ -58,7 +62,10 @@ pub trait PackableClass: Sized {
         big_endian: bool,
         class: Class,
     ) -> Result<(), io::Error>;
+}
 
+/// A special form of the [Unpackable] trait - a pointer that can be stored in `32` or `64` bits
+pub trait UnpackableClass: Sized {
     /// Unpack `Self` from `r`
     /// # Arguments
     /// * `r` - The stream to read from
@@ -81,7 +88,9 @@ macro_rules! impl_packable {
                     w.write_all(&self.to_le_bytes())
                 }
             }
+        }
 
+        impl Unpackable for $i {
             fn unpack<R: io::Read>(r: &mut R, big_endian: bool) -> Result<Self, UnpackError> {
                 let mut data = [0u8; core::mem::size_of::<Self>()];
 
@@ -121,7 +130,9 @@ impl PackableClass for u64 {
             (self as u32).pack(w, big_endian)
         }
     }
+}
 
+impl UnpackableClass for u64 {
     fn unpack_class<R: io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,

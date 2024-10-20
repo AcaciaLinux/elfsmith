@@ -2,6 +2,7 @@ use std::io::{Read, Seek};
 
 use crate::{
     str_from_null_terminated, Header, Packable, ProgramHeader, SectionHeader, UnpackError,
+    Unpackable,
 };
 
 /// A representation of a ELF file

@@ -1,6 +1,6 @@
 use std::{fmt::Debug, io};
 
-use crate::{Blob, Packable, PackableClass, UnpackError};
+use crate::{Blob, Packable, PackableClass, UnpackError, Unpackable, UnpackableClass};
 
 use super::Class;
 
@@ -57,7 +57,9 @@ impl PackableClass for ProgramHeader {
 
         Ok(())
     }
+}
 
+impl UnpackableClass for ProgramHeader {
     fn unpack_class<R: std::io::Read + io::Seek>(
         r: &mut R,
         big_endian: bool,
