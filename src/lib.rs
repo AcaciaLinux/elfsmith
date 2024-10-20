@@ -42,7 +42,7 @@ use core::str;
 ///
 /// Finds the length of the string by iterating over it until
 /// the 0 byte and assumes a UTF-8 string from that
-pub unsafe fn str_from_null_terminated(ptr: *const u8) -> &'static str {
+unsafe fn str_from_null_terminated(ptr: *const u8) -> &'static str {
     let mut len = 0usize;
 
     loop {
