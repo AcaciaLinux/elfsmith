@@ -32,4 +32,17 @@ impl Blob {
 
         Ok(Blob { blob: res })
     }
+
+    /// Writes the contents of this blob to `w` at `offset`
+    /// # Arguments
+    /// * `w` - The stream to write to
+    /// * `offset` - The offset to start the data at
+    pub fn write<W: io::Write + io::Seek>(&self, w: &mut W, offset: u64) -> Result<(), io::Error> {
+        let old_pos = w.stream_position()?;
+        w.seek(io::SeekFrom::Start(offset))?;
+        w.write_all(&self.blob)?;
+        w.seek(io::SeekFrom::Start(old_pos))?;
+
+        Ok(())
+    }
 }
