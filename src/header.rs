@@ -4,6 +4,15 @@ use crate::{Packable, PackableClass, UnpackError, Unpackable, UnpackableClass};
 
 use super::{Ident, ProgramHeader, SectionHeader};
 
+const ELF_HEADER_SIZE_32: u64 = 0x34;
+const ELF_HEADER_SIZE_64: u64 = 0x40;
+
+const PROGRAM_HEADER_SIZE_32: u64 = 0x20;
+const PROGRAM_HEADER_SIZE_64: u64 = 0x38;
+
+const SECTION_HEADER_SIZE_32: u64 = 0x28;
+const SECTION_HEADER_SIZE_64: u64 = 0x40;
+
 /// The ELF header
 #[derive(Debug)]
 pub struct Header {
@@ -80,6 +89,36 @@ impl Header {
         }
 
         Ok(res)
+    }
+
+    /// Returns the size of this header in the file
+    ///
+    /// This is derived from the ELF class (32 / 64 bit)
+    pub fn get_header_size(&self) -> u64 {
+        match self.ident.class {
+            crate::Class::ELF32 => ELF_HEADER_SIZE_32,
+            crate::Class::ELF64 => ELF_HEADER_SIZE_64,
+        }
+    }
+
+    /// Returns the size a program header takes as described by this header
+    ///
+    /// This is derived from the ELF class (32 / 64 bit)
+    pub fn get_program_header_size(&self) -> u64 {
+        match self.ident.class {
+            crate::Class::ELF32 => PROGRAM_HEADER_SIZE_32,
+            crate::Class::ELF64 => PROGRAM_HEADER_SIZE_64,
+        }
+    }
+
+    /// Returns the size a section header takes as described by this header
+    ///
+    /// This is derived from the ELF class (32 / 64 bit)
+    pub fn get_section_header_size(&self) -> u64 {
+        match self.ident.class {
+            crate::Class::ELF32 => SECTION_HEADER_SIZE_32,
+            crate::Class::ELF64 => SECTION_HEADER_SIZE_64,
+        }
     }
 }
 
