@@ -8,7 +8,7 @@ use super::Class;
 #[derive(Debug)]
 pub struct ProgramHeader {
     /// The type of segment at hand
-    pub ty: u32,
+    pub ty: ProgramHeaderType,
     /// The flags for this segment:
     /// - `0x01`: Executable
     /// - `0x02`: Writable
@@ -65,7 +65,7 @@ impl UnpackableClass for ProgramHeader {
         big_endian: bool,
         class: super::Class,
     ) -> Result<Self, UnpackError> {
-        let ty = u32::unpack(r, big_endian)?;
+        let ty = ProgramHeaderType::unpack(r, big_endian)?;
 
         let flags = if class == Class::ELF64 {
             u32::unpack(r, big_endian)?
@@ -99,6 +99,54 @@ impl UnpackableClass for ProgramHeader {
             mem_size,
             alignment,
             data,
+        })
+    }
+}
+
+/// The type of program header at hand
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u32)]
+pub enum ProgramHeaderType {
+    /// A unused program
+    Unused = 0x0,
+    /// A loadable segment
+    Loadable = 0x1,
+    /// Dynamic linking information
+    Dynamic = 0x2,
+    /// The interpreter to run this executable with
+    Interpreter = 0x3,
+    /// The program header tables
+    ProgramHeaderTable = 0x6,
+    /// Any other unknown program type
+    Other(u32),
+}
+
+impl Packable for ProgramHeaderType {
+    fn pack<W: io::Write + io::Seek>(&self, w: &mut W, big_endian: bool) -> Result<(), io::Error> {
+        let ty: u32 = match self {
+            ProgramHeaderType::Unused => 0,
+            ProgramHeaderType::Loadable => 1,
+            ProgramHeaderType::Dynamic => 2,
+            ProgramHeaderType::Interpreter => 3,
+            ProgramHeaderType::ProgramHeaderTable => 6,
+            ProgramHeaderType::Other(ty) => *ty,
+        };
+
+        ty.pack(w, big_endian)
+    }
+}
+
+impl Unpackable for ProgramHeaderType {
+    fn unpack<R: io::Read + io::Seek>(r: &mut R, big_endian: bool) -> Result<Self, UnpackError> {
+        let ty = u32::unpack(r, big_endian)?;
+
+        Ok(match ty {
+            0x0 => Self::Unused,
+            0x1 => Self::Loadable,
+            0x2 => Self::Dynamic,
+            0x3 => Self::Interpreter,
+            0x6 => Self::ProgramHeaderTable,
+            x => Self::Other(x),
         })
     }
 }
