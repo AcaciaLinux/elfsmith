@@ -53,8 +53,8 @@ impl Ident {
 }
 
 impl Packable for Class {
-    fn pack<W: io::Write + io::Seek>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
-        w.write_all(&[self as u8])
+    fn pack<W: io::Write + io::Seek>(&self, w: &mut W, _: bool) -> Result<(), io::Error> {
+        w.write_all(&[*self as u8])
     }
 }
 
@@ -76,8 +76,8 @@ impl Unpackable for Class {
 }
 
 impl Packable for Endianness {
-    fn pack<W: io::Write + io::Seek>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
-        w.write_all(&[self as u8])
+    fn pack<W: io::Write + io::Seek>(&self, w: &mut W, _: bool) -> Result<(), io::Error> {
+        w.write_all(&[*self as u8])
     }
 }
 
@@ -99,7 +99,7 @@ impl Unpackable for Endianness {
 }
 
 impl Packable for Ident {
-    fn pack<W: io::Write + io::Seek>(self, w: &mut W, _: bool) -> Result<(), io::Error> {
+    fn pack<W: io::Write + io::Seek>(&self, w: &mut W, _: bool) -> Result<(), io::Error> {
         w.write_all(&self.magic)?;
 
         w.write_all(&[

@@ -85,7 +85,7 @@ impl Header {
 
 impl Packable for Header {
     fn pack<W: std::io::Write + std::io::Seek>(
-        self,
+        &self,
         w: &mut W,
         _: bool,
     ) -> Result<(), std::io::Error> {

@@ -36,7 +36,7 @@ pub trait Packable {
     /// # Arguments
     /// * `w` - The stream to write to using `.write_all()`
     /// * `big_endian` - Whether the stream should be written to in big endian form
-    fn pack<W: io::Write + io::Seek>(self, w: &mut W, big_endian: bool) -> Result<(), io::Error>;
+    fn pack<W: io::Write + io::Seek>(&self, w: &mut W, big_endian: bool) -> Result<(), io::Error>;
 }
 
 /// Allows the implementing structs to be deserialized
@@ -81,7 +81,7 @@ pub trait UnpackableClass: Sized {
 macro_rules! impl_packable {
     ($i:ident) => {
         impl Packable for $i {
-            fn pack<W: io::Write>(self, w: &mut W, big_endian: bool) -> Result<(), io::Error> {
+            fn pack<W: io::Write>(&self, w: &mut W, big_endian: bool) -> Result<(), io::Error> {
                 if big_endian {
                     w.write_all(&self.to_be_bytes())
                 } else {
